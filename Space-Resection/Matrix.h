@@ -316,8 +316,6 @@ Matrix Matrix::inv() {										// 矩阵求逆
 				if (tmp.data[i][j] != 0) {
 					c = tmp.data[i][j] / tmp.data[j][j];
 					for (int k = 0; k < rows; k++) {					// 对整行进行遍历
-						//tmp.data[i][k] -= c * tmp.data[j][k];
-						//ret.data[i][k] -= c * tmp.data[j][k];
 						tmp.data[i][k] = tmp.data[i][k] - c * tmp.data[j][k];
 						ret.data[i][k] = ret.data[i][k] - c * ret.data[j][k];
 					}
@@ -340,8 +338,6 @@ Matrix Matrix::inv() {										// 矩阵求逆
 		for (int j = i + 1; j < rows; j++) {					// 对第 i 列右边的列进行计算
 			c = tmp.data[i][j];
 			for (int k = 0; k < rows; k++) {					// 对改行进行遍历
-				//tmp.data[i][k] -= c * tmp.data[j][k];
-				//ret.data[i][k] -= c * ret.data[j][k];
 				tmp.data[i][k] = tmp.data[i][k] - c * tmp.data[j][k];
 				ret.data[i][k] = ret.data[i][k] - c * ret.data[j][k];
 			}
