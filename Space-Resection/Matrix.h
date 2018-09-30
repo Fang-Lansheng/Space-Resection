@@ -8,59 +8,36 @@
 using namespace std;
 
 class Matrix {
+
+/// 变量
 public:
-	// double *p = NULL;		// 指针
 	int rows;				// 行高
 	int cols;				// 列宽
 	int size;				// 容器大小
 	vector<vector<double>> data;
 	
+/// 函数
 public:
 	Matrix() {};											// 默认构造函数
-	// Matrix(int rows, int cols, double value);			// 构造函数
 	Matrix(int m, int n);									// 构造函数
 	Matrix(int n);											// 构造函数（方阵）
 	virtual ~Matrix();										// 析构函数
 	double get(int row, int col) const;						// 得到矩阵在 row 行 col 列的值
 	void set(int row, int col, double value);				// 将矩阵 row 行 col 列的值赋为 value
-	// double at(int row, int col);							// 访问矩阵元素
 
 	bool operator=(const Matrix&);
 	friend Matrix operator+(const Matrix&, const Matrix&);	// 重载运算符 +
 	friend Matrix operator-(const Matrix&, const Matrix&);	// 重载运算符 -
 	friend Matrix operator*(const Matrix&, const Matrix&);	// 重载运算符 *
-	friend Matrix operator*(double,		   const Matrix&);
-	friend Matrix operator*(const Matrix&, double);
+	friend Matrix operator*(double,		   const Matrix&);	// 重载运算符 *
+	friend Matrix operator*(const Matrix&, double);			// 重载运算符 *
 	friend Matrix operator/(const Matrix&, double);			// 重载运算符 /
 
 	double det();											// 求矩阵行列式
 	Matrix t() const;										// 求矩阵转置
-	Matrix adj();											// 求矩阵的伴随矩阵
-	Matrix SwitchRow(int, int);
-	Matrix SwitchCol(int, int);
 	Matrix inv();											// 求矩阵的逆矩阵
-	void print();											// 输出矩阵
+	void print();											// 打印矩阵
 };
-
-//Matrix::Matrix(int rows, int cols, double value) {			// 构造函数	
-//
-//	assert(rows > 0);
-//	assert(cols > 0);
-//
-//	this->rows = rows;
-//	this->cols = cols;
-//	this->size = rows * cols;
-//
-//	if (size > 0 && size <= 100) {
-//		p = new double[size + 1 ];
-//		
-//		if (p != NULL) {
-//			for (int i = 0; i < size; i++) {
-//				p[i] = value;
-//			}
-//		}
-//	}
-//}
 
 Matrix::Matrix(int m, int n) {								// 构造函数
 
@@ -107,15 +84,11 @@ double Matrix::get(int row, int col) const {				// get 获取矩阵元素值
 
 void Matrix::set(int row, int col, double value) {			// set 设置矩阵元素值
 
-	assert(row >= 0 && row < this->rows);
-	assert(col >= 0 && col < this->cols);
+	assert(row >= 0 && row < rows);
+	assert(col >= 0 && col < cols);
 
 	data[row][col] = value;
 }
-
-//double Matrix::at(int row, int col) {						// at 返回指针
-//	return p[this->rows * row + col];
-//}
 
 bool Matrix::operator=(const Matrix& m) {
 
@@ -171,13 +144,15 @@ Matrix operator*(const Matrix& m1, const Matrix& m2) {		// 矩阵相乘
 	assert(m1.cols == m2.rows);
 
 	Matrix ret(m1.rows, m2.cols);
+	double sum;
 
 	for (int i = 0; i < m1.rows; i++) {
 		for (int j = 0; j < m2.cols; j++) {
-			for (int k = 0; k < m1.cols; k++) {	// m1.cols == m2.rows
-				// ret.p[i * m1.rows + j] = m1.p[i * m1.rows + k] * m2.p[k * m2.cols + j];
-				ret.data[i][j] = m1.data[i][k] + m2.data[k][j];
+			sum = 0.0;
+			for (int k = 0; k < m1.cols; k++) {				// m1.cols == m2.rows
+				sum += m1.data[i][k] * m2.data[k][j];
 			}
+			ret.data[i][j] = sum;
 		}
 	}
 	return ret;
@@ -280,67 +255,94 @@ Matrix Matrix::t() const {									// 矩阵转置
 	return ret;
 }
 
-Matrix Matrix::adj() {										// 求矩阵的伴随矩阵
-	
-	assert(rows == cols);
-
-	const int n = rows;		// 矩阵为方阵
-	Matrix ret(n);			// 伴随矩阵
-	vector<vector<double>> bb((n - 1), vector<double>(n - 1));	// 创建 n - 1 阶的代数余子式
-
-	int pi, pj, flag = 0;
-	for (int ai = 0; ai < n; ai++) {
-		for (int aj = 0; aj < n; aj++) {
-			for (int bi = 0; bi < n - 1; bi++) {
-				for (int bj = 0; bj < n - 1; bj++) {		// ai 行的代数余子式：
-					if (bi < ai)	
-						pi = 0;								// 小于 ai 的行，aa 与 bb 同行赋值
-					else			
-						pi = 1;								// 大于等于 ai 的行，取 aa 阵的 ai + 1 行赋值给 bb 阵的第 bi 行
-					if (bj < aj)	
-						pj = 0;								// 小于 aj 的列，aa 与 bb 同列赋值
-					else			
-						pj = 1;								// 大于等于 aj 的列，取 aa 阵的 aj + 1 列赋值给 bb 阵的第 bj 列
-	
-					bb[bi][bj] = data[bi + pi][bj + pj];				
-				}
-			}
-			flag = ((ai + aj) % 2 == 0) ? 1 : -1;
-			ret.data[ai][aj] = flag * dets(n - 1, bb);
-		}
-	}
-
-	return ret;
-}
-
-
-Matrix Matrix::SwitchRow(int row1, int row2) {
-	
-	assert(row1 >= 0 && row1 < rows);
-	assert(row2 >= 0 && row2 < rows);
-
-	Matrix ret(rows, cols);
-	ret.data = data;
-
-	for (int i = 0; i < cols; i++) {
-		ret.data[row2][i] = data[row1][i];
-		ret.data[row1][i] = data[row2][i];
-	}
-	return ret;
-}
-
 Matrix Matrix::inv() {										// 矩阵求逆
 	
 	double Det = det();
-	assert(Det != 0.0);
+	assert(Det != 0.0);										// 行列式不能为零
 
-	Matrix Adj = adj();										// 伴随矩阵
-	Matrix ret(rows);										// 逆矩阵
-
+	Matrix tmp(rows);										// 相当于增广矩阵的左边矩阵
 	for (int i = 0; i < rows; i++) {
-		for (int j = 0; j < cols; j++) {
-			// ret.p[i * rows + j] = Adj.p[i * rows + j] / Det;
-			ret.data[i][j] = Adj.data[i][j] / Det;
+		for (int j = 0; j < rows; j++) {
+			tmp.data[i][j] = data[i][j];
+		}
+	}
+	Matrix ret(rows);										// 逆矩阵（初始化为单位矩阵）
+	for (int i = 0; i < rows; i++) {
+		ret.set(i, i, 1.0);
+	}
+	
+	int r = 0;												// 行号
+	double c = 1.0;											// 进行初等变换时的系数，设初值为 1
+
+	// 初等变换（i 表示第 i 行），将左下角元素化为 0 
+	for (int i = 0; i < rows; i++) {
+		if (tmp.data[i][i] == 0) {							// 如果对角线上的元素为 0，此时进行行变换	
+			for (int j = i; j < rows; j++) {				// 对 i 行以后的各行进行判断，找到第 i 个元素不为 0 的行，并与第 i 行进行交换
+				if (j != i) {
+					if (tmp.data[j][i] != 0) {
+						r = j;								// 记住该行的行号
+						break;								// 退出循环
+					}
+				}
+			}
+
+			for (int k = 0; k < rows; k++) {				// 对第 i 行和第 r 行进行调换
+				vector<vector<double>> t1(1, vector<double>(rows));
+				t1[0][k] = tmp.data[i][k];
+				tmp.data[i][k] = tmp.data[r][k];
+				tmp.data[r][k] = t1[0][k];
+				vector<vector<double>> t2(1, vector<double>(rows));
+				t2[0][k] = ret.data[i][k];
+				ret.data[i][k] = ret.data[r][k];
+				ret.data[r][k] = t2[0][k];
+			}
+		}
+
+		//for (int j = 0; j < rows; j++) {					// 对其他行的所有列进行计算（将其他行的该列化为 0）
+		//	if (j != i) {									// 本行不参与计算
+		//		if (tmp.data[j][i] != 0) {					// 若第 j 行第 i 列为零，则跳过（省略计算步骤）
+		//			c = tmp.data[j][i] / tmp.data[i][i];		// 比例系数
+		//			for (int k = 0; k < rows; k++) {			// 第 k 列（对第 j 行遍历）
+		//				tmp.data[j][k] -= c * tmp.data[i][k];	// 第 j 行 = 第 j 行 - c * 第 i 行
+		//				ret.data[j][k] -= c * ret.data[i][k];
+		//			}
+		//		}	
+		//	}
+		//}
+		
+		// 试着仅仅将“左下角”化为 0 ？（省去更多计算过程，也许结果更不易出错？）
+		if (i > 0) {				// j -> 列； i -> 行
+			for (int j = 0; j < i; j++) {							// 对第 i 行的 0 - j 列进行遍历，分别将其值化为 0
+				if (tmp.data[i][j] != 0) {
+					c = tmp.data[i][j] / tmp.data[j][j];
+					for (int k = 0; k < rows; k++) {					// 对整行进行遍历
+						tmp.data[i][k] -= c * tmp.data[j][k];
+						ret.data[i][k] -= c * tmp.data[j][k];
+					}
+				}
+			}
+		}
+	}
+
+	// 将对角元素化为 1
+	for (int i = 0; i < rows; i++) {
+		c = 1 / tmp.data[i][i];
+		for (int j = 0; j < rows; j++) {
+			tmp.data[i][j] *= c;
+			ret.data[i][j] *= c;
+		}
+	}
+
+	// 转化为单位矩阵
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < rows; j++) {					// 对该行其他列进行计算
+			c = tmp.data[i][j];
+			if (j != i) {									// 对 [i][[i] 不进行计算
+				for (int k = 0; k < rows; k++) {
+					tmp.data[i][k] -= c * tmp.data[j][k];
+					ret.data[i][k] -= c * ret.data[j][k];
+				}
+			}
 		}
 	}
 
@@ -350,13 +352,11 @@ Matrix Matrix::inv() {										// 矩阵求逆
 void Matrix::print() {										// 打印矩阵
 
 	cout << endl;
-	for (size_t i = 0; i < (int)data.size(); i++)
-	{
-		for (size_t j = 0; j < (int)data[0].size(); j++)
-		{
-			cout << data[i][j] << "\t";
+	for (size_t i = 0; i < (int)data.size(); i++) {
+		for (size_t j = 0; j < (int)data[0].size(); j++) {
+			// cout << data[i][j] << "\t";
+			printf("%.6f\t", data[i][j]);
 		}
 		cout << endl;
 	}
 }
-
