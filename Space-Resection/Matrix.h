@@ -316,8 +316,10 @@ Matrix Matrix::inv() {										// 矩阵求逆
 				if (tmp.data[i][j] != 0) {
 					c = tmp.data[i][j] / tmp.data[j][j];
 					for (int k = 0; k < rows; k++) {					// 对整行进行遍历
-						tmp.data[i][k] -= c * tmp.data[j][k];
-						ret.data[i][k] -= c * tmp.data[j][k];
+						//tmp.data[i][k] -= c * tmp.data[j][k];
+						//ret.data[i][k] -= c * tmp.data[j][k];
+						tmp.data[i][k] = tmp.data[i][k] - c * tmp.data[j][k];
+						ret.data[i][k] = ret.data[i][k] - c * ret.data[j][k];
 					}
 				}
 			}
@@ -335,13 +337,13 @@ Matrix Matrix::inv() {										// 矩阵求逆
 
 	// 转化为单位矩阵
 	for (int i = 0; i < rows; i++) {
-		for (int j = 0; j < rows; j++) {					// 对该行其他列进行计算
+		for (int j = i + 1; j < rows; j++) {					// 对第 i 列右边的列进行计算
 			c = tmp.data[i][j];
-			if (j != i) {									// 对 [i][[i] 不进行计算
-				for (int k = 0; k < rows; k++) {
-					tmp.data[i][k] -= c * tmp.data[j][k];
-					ret.data[i][k] -= c * ret.data[j][k];
-				}
+			for (int k = 0; k < rows; k++) {					// 对改行进行遍历
+				//tmp.data[i][k] -= c * tmp.data[j][k];
+				//ret.data[i][k] -= c * ret.data[j][k];
+				tmp.data[i][k] = tmp.data[i][k] - c * tmp.data[j][k];
+				ret.data[i][k] = ret.data[i][k] - c * ret.data[j][k];
 			}
 		}
 	}
@@ -353,6 +355,7 @@ void Matrix::print() {										// 打印矩阵
 
 	cout << endl;
 	for (size_t i = 0; i < (int)data.size(); i++) {
+		cout << "<" << i << ">";
 		for (size_t j = 0; j < (int)data[0].size(); j++) {
 			cout << "\t|  " << data[i][j];
 		}
