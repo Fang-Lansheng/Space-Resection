@@ -354,8 +354,7 @@ void Matrix::print() {										// ¥Ú”°æÿ’Û
 	cout << endl;
 	for (size_t i = 0; i < (int)data.size(); i++) {
 		for (size_t j = 0; j < (int)data[0].size(); j++) {
-			// cout << data[i][j] << "\t";
-			printf("%.6f\t", data[i][j]);
+			cout << "\t|  " << data[i][j];
 		}
 		cout << endl;
 	}
